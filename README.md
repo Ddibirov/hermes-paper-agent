@@ -8,6 +8,12 @@ broadsheet is.
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+### 👉 [Read a sample edition](https://vaelkeep.github.io/hermes-paper-agent/)
+
+A real edition from this generator, printed by the engine and served as a
+static site. Arrow keys turn the pages; **Source** shows the markdown behind
+any of them.
+
 ![The opening spread of the sample edition — page one leads with the front-page
 story, page two with the Weather and Financial boards, set as a two-page
 broadsheet spread.](screenshots/pages-1-2.png)
@@ -211,6 +217,9 @@ VAEL_PAPER_READER=/absolute/path/to/vael-paper/reader/dist \
 Open <http://localhost:8791>. Turn pages with the arrow keys; press **Source**
 to see the markdown behind any page. The first run is the fiction sample —
 next, make it yours.
+
+If you would rather see the result before installing anything, the same
+edition is published at **[vaelkeep.github.io/hermes-paper-agent](https://vaelkeep.github.io/hermes-paper-agent/)**.
 
 ---
 
@@ -445,6 +454,8 @@ scripts/                      the data desks — code, deliberately.
   finance-desk.py             Yahoo Finance  → a Financial quote table
 samples/lead-desk/            an exemplar front-page story — what the model
                               writes, kept as a house voice and a check target.
+samples/edition/              a full edition, checked clean, published to
+                              GitHub Pages as the live sample.
 inbox/                        what the desks read: feeds, notes, calendar,
                               ledger, steps, photos. See inbox/README.md.
 cron/                         how to schedule the nightly run with Hermes cron,
@@ -454,8 +465,8 @@ tests/                        the suite: one file per desk plus the shared
                               format contract. Fixtures include canned
                               Open-Meteo and Yahoo responses, so no test
                               touches a live API.
-.github/workflows/            CI (tests, lint, a sample edition) and the
-                              tag-triggered release.
+.github/workflows/            CI (tests, lint, a sample edition), the
+                              tag-triggered release, and the Pages deploy.
 screenshots/                  the images in this README.
 ```
 
