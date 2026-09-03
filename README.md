@@ -4,6 +4,10 @@ Your own nightly newspaper — written overnight from your calendar, budget,
 feeds, notes and a couple of live data feeds, and printed the way a real
 broadsheet is.
 
+[![CI](https://github.com/vaelkeep/hermes-paper-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/vaelkeep/hermes-paper-agent/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 ![The opening spread of the sample edition — page one leads with the front-page
 story, page two with the Weather and Financial boards, set as a two-page
 broadsheet spread.](screenshots/pages-1-2.png)
@@ -47,6 +51,7 @@ material and live feeds.*
 - [Project structure](#-project-structure)
 - [The write → check → fix loop](#-the-write--check--fix-loop)
 - [Run it every night](#-run-it-every-night)
+- [Contributing](#-contributing)
 - [License](#-license)
 
 ---
@@ -445,6 +450,12 @@ inbox/                        what the desks read: feeds, notes, calendar,
 cron/                         how to schedule the nightly run with Hermes cron,
                               and the two workdir gotchas.
 editions/                     the paper's identity (paper.json) and its output.
+tests/                        the suite: one file per desk plus the shared
+                              format contract. Fixtures include canned
+                              Open-Meteo and Yahoo responses, so no test
+                              touches a live API.
+.github/workflows/            CI (tests, lint, a sample edition) and the
+                              tag-triggered release.
 screenshots/                  the images in this README.
 ```
 
@@ -494,6 +505,33 @@ then create the job with `workdir` pointed at this repo, `skills =
 Your paper is on the front porch (well: at <http://localhost:8791>) at
 breakfast — and if a desk gave up it shows as a printer's mark in the reader,
 not a blank page and not a fatal failure at 4 a.m.
+
+---
+
+## 🤝 Contributing
+
+The desks are the part most worth changing — a new one is a small script and a
+section id (see [Examples](#-examples--write-your-own-desk)).
+
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest          # the suite; hermetic, no network
+python -m ruff check .    # lint
+```
+
+The tests load each desk by path and run it against fixtures, including canned
+Open-Meteo and Yahoo responses, so nothing in the suite touches a live API. If
+you add a desk, the contract tests in `tests/test_edition_contract.py` will
+already hold it to the house rules — a headline, a section that exists in
+`paper.json`, at most four columns, one chart label per value, and never
+`priority: 1`, which belongs to the lead.
+
+Two rules carry over from `AGENTS.md`: a data desk is code and never a model,
+and a desk that cannot read its source exits nonzero rather than guessing. Both
+have tests; please keep them passing.
+
+CI runs the suite on Python 3.11–3.13 on Linux and on 3.13 on macOS, lints, and
+builds a sample edition from the shipped fixtures.
 
 ---
 

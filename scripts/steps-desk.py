@@ -42,7 +42,7 @@ def build_article(rows: list[tuple[str, int]]) -> str:
     good = sum(1 for v in values if v >= target)
     best = max(values)
     best_day = labels[values.index(best)]
-    second = labels[1] if len(labels) > 1 else "the day before"
+    quietest = labels[values.index(min(values))]
     caption = (
         f"Daily steps, last seven days, with your own target of {target:,} "
         f"ruled across. {good} of {len(values)} days reached it."
@@ -85,7 +85,7 @@ many, not why, so the reason sits with you, not on this page.
 |:---|---:|:---|
 {rows_md}
 
-{second} apart, the run is steady; where it dips there was usually a plan.
+{quietest} apart, the run is steady; where it dips there was usually a plan.
 The paper's advice, in the paper's voice: the target is a pace, not a
 verdict, and the week already met it.
 """

@@ -43,13 +43,28 @@ def clip(s: str, limit: int = 25) -> str:
     return s if len(s) <= limit else s[: limit - 1].rstrip() + "…"
 
 
+def parse_amount(amount: str) -> float:
+    """A ledger figure as a number. Raises ValueError if it is not one.
+
+    Money in is written with a typographic minus (−, U+2212) on the page, so
+    accept it alongside the ASCII hyphen; a figure this cannot read is a hole
+    in the arithmetic, and the desk fails rather than print a total that is
+    quietly short.
+    """
+    cleaned = (
+        amount.strip()
+        .replace("\u2212", "-")   # typographic minus
+        .replace("\u2013", "-")   # en dash, as some exports write it
+        .replace("$", "")
+        .replace(",", "")
+    )
+    if cleaned.startswith("(") and cleaned.endswith(")"):   # (8.00) = money in
+        cleaned = "-" + cleaned[1:-1]
+    return float(cleaned)
+
+
 def build_article(rows: list[dict]) -> str:
-    total = 0.0
-    for r in rows:
-        try:
-            total += float(r["amount"].replace("$", "").replace(",", ""))
-        except ValueError:
-            pass
+    total = sum(parse_amount(r["amount"]) for r in rows)
 
     lines = []
     lines.append("---")
@@ -71,9 +86,12 @@ def build_article(rows: list[dict]) -> str:
     for r in rows:
         lines.append(f"| {clip(r['day'])} | {clip(r['item'])} | {r['amount']} |")
     lines.append("")
-    lines.append(f"For the week, a net of ${total:,.2f} across {len(rows)} entries. "
-                 "The two largest lines are the furnace and the groceries; "
-                 "both were expected.")
+    largest = sorted(rows, key=lambda r: parse_amount(r["amount"]), reverse=True)[:2]
+    named = " and ".join(r["item"].strip().lower() for r in largest)
+    entries = f"{len(rows)} {'entry' if len(rows) == 1 else 'entries'}"
+    lines.append(f"For the week, a net of ${total:,.2f} across {entries}. "
+                 f"The {'two largest lines are' if len(largest) > 1 else 'largest line is'} "
+                 f"the {named}.")
     lines.append("")
     return "\n".join(lines)
 
@@ -94,6 +112,14 @@ def main() -> int:
     if not rows:
         print("error: empty ledger data", file=sys.stderr)
         return 1
+
+    for r in rows:
+        try:
+            parse_amount(r["amount"])
+        except ValueError:
+            print(f"error: unreadable amount {r['amount']!r} for {r['item']!r}; "
+                  "refusing to print a total that does not add up", file=sys.stderr)
+            return 1
 
     articles = args.edition_dir / "articles"
     articles.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,127 @@
+"""Cross-cutting rules every desk has to honour, from AGENTS.md and the
+Vael Paper format contract. These are the invariants that stop an edition
+printing with a mark in it."""
+
+import json
+import os
+import re
+import stat
+
+import pytest
+from conftest import REPO, SCRIPTS, frontmatter
+
+DESKS = ["steps-desk.py", "ledger-desk.py", "weather-desk.py", "finance-desk.py"]
+
+
+@pytest.fixture
+def articles(steps_desk, ledger_desk, weather_desk, finance_desk, open_meteo, quote):
+    """One article from each data desk, all from fixtures."""
+    return {
+        "steps": steps_desk.build_article([("Fri", 9120), ("Sat", 2840), ("Sun", 8100)]),
+        "ledger": ledger_desk.build_article(
+            [{"day": "Fri", "item": "Groceries", "amount": "$184.20"}]),
+        "weather": weather_desk.build_article(open_meteo, "Washington", "f"),
+        "finance": finance_desk.build_article([quote("NVDA"), quote("AMZN")]),
+    }
+
+
+def test_every_article_opens_with_frontmatter(articles):
+    for name, article in articles.items():
+        assert article.startswith("---\n"), name
+
+
+def test_every_article_has_a_headline(articles):
+    for name, article in articles.items():
+        assert frontmatter(article).get("headline"), name
+
+
+def test_no_headline_carries_a_colon(articles):
+    """The scanner forgives it, but the paper sets it badly."""
+    for name, article in articles.items():
+        assert ":" not in frontmatter(article)["headline"], name
+
+
+def test_no_headline_asks_a_question(articles):
+    """AGENTS.md, the paper's voice: no headlines that ask a question."""
+    for name, article in articles.items():
+        assert not frontmatter(article)["headline"].endswith("?"), name
+
+
+def test_every_section_exists_in_paper_json(articles, paper_sections):
+    """AGENTS.md hard rule: look up section ids, do not invent them."""
+    for name, article in articles.items():
+        assert frontmatter(article)["section"] in paper_sections, name
+
+
+def test_priority_is_an_integer(articles):
+    for name, article in articles.items():
+        assert re.fullmatch(r"\d+", frontmatter(article)["priority"]), name
+
+
+def test_no_data_desk_claims_the_front_page(articles):
+    """Exactly one story is priority 1, and the lead desk writes it."""
+    for name, article in articles.items():
+        assert frontmatter(article)["priority"] != "1", name
+
+
+def test_no_exclamation_marks(articles):
+    for name, article in articles.items():
+        assert "!" not in article, name
+
+
+def test_chart_blocks_have_one_label_per_value(articles):
+    for name, article in articles.items():
+        values = re.search(r"^  values: \[(.*)\]$", article, re.M)
+        labels = re.search(r"^  labels: \[(.*)\]$", article, re.M)
+        if not values:
+            continue
+        assert labels, f"{name}: chart with values but no labels"
+        assert len(values.group(1).split(",")) == len(labels.group(1).split(",")), name
+
+
+def test_pipe_tables_are_rectangular(articles):
+    for name, article in articles.items():
+        rows = [ln for ln in article.splitlines() if ln.startswith("|")]
+        widths = {ln.count("|") for ln in rows}
+        assert len(widths) <= 1, f"{name}: ragged table {widths}"
+
+
+def test_only_http_urls_are_linked(articles):
+    """Anything else degrades to plain text with a printer's mark."""
+    for name, article in articles.items():
+        for url in re.findall(r"url: (\S+)", article):
+            assert url.startswith(("http://", "https://")), f"{name}: {url}"
+
+
+@pytest.mark.parametrize("desk", DESKS)
+def test_desks_are_executable(desk):
+    """They carry a shebang and the docs invoke them directly, so the exec bit
+    has to be set — it was not, and `scripts/steps-desk.py <dir>` failed."""
+    path = SCRIPTS / desk
+    assert path.read_text().startswith("#!/usr/bin/env python3"), desk
+    assert os.stat(path).st_mode & stat.S_IXUSR, f"{desk} is not executable"
+
+
+@pytest.mark.parametrize("desk", DESKS)
+def test_desks_import_only_the_standard_library(desk):
+    """The README promises the desks need no pip install. Keep it true."""
+    third_party = {"requests", "httpx", "pandas", "numpy", "yaml", "yfinance"}
+    source = (SCRIPTS / desk).read_text()
+    imported = set(re.findall(r"^(?:from|import) (\w+)", source, re.M))
+    assert not (imported & third_party), f"{desk} imports {imported & third_party}"
+
+
+def test_shipped_fixtures_still_parse(steps_desk, ledger_desk):
+    """The repo ships fixtures so a first run produces a paper. Keep them valid."""
+    assert steps_desk.load_steps(REPO / "inbox" / "steps.csv")
+    assert ledger_desk.load_ledger(REPO / "inbox" / "ledger.json")
+    json.loads((REPO / "inbox" / "calendar.json").read_text())
+
+
+def test_paper_json_is_well_formed():
+    paper = json.loads((REPO / "editions" / "paper.json").read_text())
+    assert paper["masthead"] and paper["motto"] and paper["founded"]
+    ids = [s["id"] for s in paper["sections"]]
+    assert len(ids) == len(set(ids)), "duplicate section ids"
+    for section in paper["sections"]:
+        assert section["id"] and section["name"]

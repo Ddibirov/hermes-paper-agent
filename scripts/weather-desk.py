@@ -122,7 +122,8 @@ def build_article(data: dict, place: str, units: str) -> str:
     # so the desk adds no guesswork a model might. Length stays above the
     # 60-word floor so the story carries its own headline.
     body = (
-        f"The week trends warm in {place}. The peak is {peak_day}, when the "
+        f"Highs in {place} run from {min(hi)}{deg} to {peak}{deg} this week. "
+        f"The peak is {peak_day}, when the "
         f"high reaches {peak}{deg}; the coolest nights stay near {min(lo)}{deg}, "
         f"so the mornings are the easy part of any walk. Rain is unevenly "
         f"spread — the likeliest wet day is {rain_day}, at a {rain_max}% "

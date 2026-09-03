@@ -12,3 +12,8 @@ __pycache__/
 
 # The generated edition folders
 /editions/2026-*/
+/editions/ci/
+
+# Test and tooling caches
+.pytest_cache/
+.ruff_cache/

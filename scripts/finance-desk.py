@@ -57,6 +57,17 @@ def money(x: float) -> str:
     return f"${x:,.2f}"
 
 
+# A paper spells small numbers; anything larger sets as a figure.
+NUMBER_WORDS = {
+    1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+    6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten",
+}
+
+
+def spell(n: int) -> str:
+    return NUMBER_WORDS.get(n, str(n))
+
+
 def build_article(quotes: list[dict]) -> str:
     up = sum(1 for q in quotes if q["change"] >= 0)
     down = len(quotes) - up
@@ -78,8 +89,15 @@ def build_article(quotes: list[dict]) -> str:
         f"{abs(best['pct']):.1f}%); {worst['name']} lagged"
     )
 
+    if up and down:
+        direction = "mixed"
+    elif up:
+        direction = "higher"
+    else:
+        direction = "lower"
+
     body = (
-        f"Three of the names this paper follows closed {'higher' if up > down else 'mixed'} "
+        f"{spell(len(quotes))} of the names this paper follows closed {direction} "
         f"today — {up} up, {down} down on the day. The standouts were "
         f"{best['name']}, {'up' if best['pct'] >= 0 else 'down'} {abs(best['pct']):.1f}%, "
         f"and {worst['name']}, {'down' if worst['pct'] < 0 else 'up'} "
