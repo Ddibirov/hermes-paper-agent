@@ -14,6 +14,15 @@ A real edition from this generator, printed by the engine and served as a
 static site. Arrow keys turn the pages; **Source** shows the markdown behind
 any of them.
 
+![A nightly run: the four data desks write their articles, the prose desks and
+the lead follow, the check comes back with a lint, the agent fixes the named
+line, and the second check comes back clean — then the finished front page
+appears.](docs/nightly-run.gif)
+
+*A run, start to finish. Every line of that terminal is real output: the desks,
+the check that caught a 27-character table cell, the fix, and the check that
+came back `ok: true, clean: true`. The paper on the right is what it printed.*
+
 ![The opening spread of the published edition — the masthead and the front-page
 story on page one, the week-ahead table and the Orange Line story on page two,
 set as a two-page broadsheet spread.](screenshots/spread-front-page.png)
@@ -490,8 +499,9 @@ tests/                        the suite: one file per desk plus the shared
                               touches a live API.
 .github/workflows/            CI (tests, lint, a sample edition), the
                               tag-triggered release, and the Pages deploy.
-docs/                         the architecture diagram and the HTML it is
-                              rendered from — correct it, don't redraw it.
+docs/                         the architecture diagram and the nightly-run
+                              GIF, each with the HTML it is rendered from —
+                              correct them, don't redraw them.
 screenshots/                  the spreads in this README, captured from
                               the published site.
 ```
