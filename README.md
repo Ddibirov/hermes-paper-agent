@@ -14,13 +14,13 @@ A real edition from this generator, printed by the engine and served as a
 static site. Arrow keys turn the pages; **Source** shows the markdown behind
 any of them.
 
-![The opening spread of the sample edition — page one leads with the front-page
-story, page two with the Weather and Financial boards, set as a two-page
-broadsheet spread.](screenshots/pages-1-2.png)
+![The opening spread of the published edition — the masthead and the front-page
+story on page one, the week-ahead table and the Orange Line story on page two,
+set as a two-page broadsheet spread.](screenshots/spread-front-page.png)
 
-*The first two pages of a generated edition. Page one is today's lead; page two
-carries the Weather and the Markets — written every night from your own
-material and live feeds.*
+*Pages one and two of the [live edition](https://vaelkeep.github.io/hermes-paper-agent/), captured from the site above.
+The lead is the reader's own Friday in the order it will happen, written after
+every other desk had filed.*
 
 ## ✨ Highlights
 
@@ -100,6 +100,14 @@ desk is a short prompt over a small amount of material, producing one file.
   already-summarised feed items, notes or photos and write one story each.
 - **The lead desk** runs last, sees everything, and writes the front page: the
   reader's own day in the order it will happen, tying the data to the stories.
+
+![Pages seven and eight of the published edition — the household ledger set as
+an agate table, a bar chart of the week's steps with the target ruled across
+it, and a story drawn from the reader's own notes.](screenshots/spread-ledger-and-steps.png)
+
+*The data desks in print, from the [live edition](https://vaelkeep.github.io/hermes-paper-agent/): the ledger's total and
+the steps chart are rendered by Python from `inbox/`, never by the model. The
+money-in line is set as an italic decline, the way the paper sets every one.*
 
 Every desk — and the edition as a whole — runs the same loop: **write** the
 file, **check** it with `vael-paper-check`, **fix** what the report names,
@@ -391,6 +399,14 @@ that reads a source and writes one markdown article. It is code, not a model,
 so it is right every night. `weather-desk.py` and `finance-desk.py` are working
 templates for exactly this pattern:
 
+![Pages three and four of the published edition — two local stories with source
+lines, and the Weather desk's line chart of the week's
+highs.](screenshots/spread-weather.png)
+
+*What a desk's `chart:` block becomes: the weather desk writes the numbers and
+the caption's reading, and the engine draws the plate in the paper's style.
+From the [live edition](https://vaelkeep.github.io/hermes-paper-agent/).*
+
 1. **Fetch** a source — a file in `inbox/` or a live API (both use only the
    standard library).
 2. **Render** frontmatter + markdown into `editions/<date>/articles/<nn>.md`,
@@ -467,7 +483,8 @@ tests/                        the suite: one file per desk plus the shared
                               touches a live API.
 .github/workflows/            CI (tests, lint, a sample edition), the
                               tag-triggered release, and the Pages deploy.
-screenshots/                  the images in this README.
+screenshots/                  the spreads in this README, captured from
+                              the published site.
 ```
 
 Generated edition folders (`editions/2026-*/`) are output, not source — they
