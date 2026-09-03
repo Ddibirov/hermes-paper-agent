@@ -81,7 +81,9 @@ jobs:
             --reader ../reader/dist \
             --out ../../site \
             --base-url https://vaelkeep.github.io/hermes-paper-agent/ \
-            --social-card ../../docs/social-card.png
+            --social-card ../../docs/social-card.png \
+            --og-title "My Hermes Personal Paper" \
+            --og-description "A nightly newspaper written by an agent: the figures come from code, the prose from a small local model, and it never publishes an edition with marks in it."
 
       - name: The export is complete
         run: |
