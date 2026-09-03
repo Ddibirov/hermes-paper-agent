@@ -79,7 +79,9 @@ jobs:
           uv run vael-paper-export \
             --editions ../../build/editions \
             --reader ../reader/dist \
-            --out ../../site
+            --out ../../site \
+            --base-url https://vaelkeep.github.io/hermes-paper-agent/ \
+            --social-card ../../docs/social-card.png
 
       - name: The export is complete
         run: |
@@ -87,6 +89,9 @@ jobs:
           test -f site/api/editions.json
           test -f site/api/editions/latest.json
           test -f site/.nojekyll
+          test -f site/social-card.png
+          grep -q 'og:image" content="https://vaelkeep.github.io/hermes-paper-agent/social-card.png"' site/index.html
+          grep -q '<title>My Hermes Personal Paper</title>' site/index.html
           ls site/editions/*/images/*.png >/dev/null
           python3 - <<'PY'
           import json, pathlib
