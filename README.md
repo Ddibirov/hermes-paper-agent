@@ -89,6 +89,12 @@ then replace the standing parts with your real ones.
 
 ## 🏗️ How it works
 
+![Four stages left to right: the material — the inbox files and two live feeds;
+the desks — data desks in code, prose desks in the model, the lead desk last,
+running a write-check-fix loop; the edition — a folder of numbered markdown;
+and, dashed because it lives in another repository, the Vael Paper engine that
+prints it.](docs/architecture.png)
+
 A newspaper isn't written by one person. It's assembled by **desks**, each with
 a beat and a source of material, then put in order by an editor. That is the
 shape here, because it is the shape that lets a small model succeed — every
@@ -484,6 +490,8 @@ tests/                        the suite: one file per desk plus the shared
                               touches a live API.
 .github/workflows/            CI (tests, lint, a sample edition), the
                               tag-triggered release, and the Pages deploy.
+docs/                         the architecture diagram and the HTML it is
+                              rendered from — correct it, don't redraw it.
 screenshots/                  the spreads in this README, captured from
                               the published site.
 ```
