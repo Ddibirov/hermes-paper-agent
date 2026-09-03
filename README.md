@@ -164,8 +164,8 @@ npm --prefix reader run build
 Clone this repo wherever you keep it — it is the agent's working directory:
 
 ```bash
-git clone <your-fork-or-path> vael-paper-agent
-cd vael-paper-agent
+git clone <your-fork-or-path> hermes-paper-agent
+cd hermes-paper-agent
 ```
 
 Install the `write-edition` procedure as a Hermes **skill**, so a session or a
@@ -185,7 +185,7 @@ Editions are *output* — the repo ships the fixtures, not a finished paper. Ask
 Hermes for one, from this repo's directory so `AGENTS.md` loads:
 
 ```bash
-cd vael-paper-agent
+cd hermes-paper-agent
 hermes
 ```
 
@@ -197,7 +197,7 @@ That writes `editions/<date>/articles/`. Now point the server at **this repo's**
 
 ```bash
 cd ~/vael-paper/server
-VAEL_PAPER_EDITIONS=/absolute/path/to/vael-paper-agent/editions \
+VAEL_PAPER_EDITIONS=/absolute/path/to/hermes-paper-agent/editions \
 VAEL_PAPER_READER=/absolute/path/to/vael-paper/reader/dist \
   uv run vael-paper          # serves on http://localhost:8791
 ```
@@ -395,7 +395,7 @@ The check is the safety rail. From the Vael Paper checkout:
 
 ```bash
 cd ~/vael-paper/server
-uv run vael-paper-check /path/to/vael-paper-agent/editions/<date> --json
+uv run vael-paper-check /path/to/hermes-paper-agent/editions/<date> --json
 ```
 
 The report has two lists, each entry with a `code`, a `message` and a
@@ -444,4 +444,4 @@ The `inbox/` fixtures and the lead-desk sample are fiction, written to match
 the Vael Paper demo's shapes, and keep its fiction note. The Vael Paper engine
 has its own MIT license — see its `LICENSE` and `NOTICE`.
 
-© 2026 Rodney Moore
+© 2026 vaelkeep

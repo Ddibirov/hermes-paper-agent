@@ -20,7 +20,7 @@ with the `cronjob` tool / `hermes cron add`:
 
 ```yaml
 schedule: every day at 4am
-workdir:  /home/you/vael-paper-agent     # must resolve to this directory,
+workdir:  /home/you/hermes-paper-agent   # must resolve to this directory,
                                          # so AGENTS.md + inbox are in context
 skills:   [vael-paper-write]
 name:     nightly edition
