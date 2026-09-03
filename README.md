@@ -14,6 +14,13 @@ A real edition from this generator, printed by the engine and served as a
 static site. Arrow keys turn the pages; **Source** shows the markdown behind
 any of them.
 
+> **What wrote what.** The four data desks ran for real, so the weather and the
+> markets in that edition are live figures. The seven stories and the front
+> page were written with Claude while the desks were being built, not by a
+> small local model, and a nightly run on a modest local model reads plainer.
+> Every article's provenance is recorded in
+> [`samples/edition/PROVENANCE.md`](samples/edition/PROVENANCE.md).
+
 ![A nightly run: the four data desks write their articles, the prose desks and
 the lead follow, the check comes back with a lint, the agent fixes the named
 line, and the second check comes back clean — then the finished front page
@@ -29,7 +36,9 @@ set as a two-page broadsheet spread.](screenshots/spread-front-page.png)
 
 *Pages one and two of the [live edition](https://vaelkeep.github.io/hermes-paper-agent/), captured from the site above.
 The lead is the reader's own Friday in the order it will happen, written after
-every other desk had filed.*
+every other desk had filed. The boards are live figures; the stories were
+written with Claude, not a local model — see
+[what wrote what](samples/edition/PROVENANCE.md).*
 
 ## ✨ Highlights
 
@@ -516,7 +525,9 @@ scripts/                      the data desks — code, deliberately.
 samples/lead-desk/            an exemplar front-page story — what the model
                               writes, kept as a house voice and a check target.
 samples/edition/              a full edition, checked clean, published to
-                              GitHub Pages as the live sample.
+                              GitHub Pages as the live sample. PROVENANCE.md
+                              records which articles are code and which were
+                              written by a model, and by which one.
 inbox/                        what the desks read: feeds, notes, calendar,
                               ledger, steps, photos. See inbox/README.md.
 cron/                         how to schedule the nightly run with Hermes cron,

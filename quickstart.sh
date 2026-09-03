@@ -191,7 +191,8 @@ for f in "$SAMPLE"/*/articles/*.md; do
     01-*|04-*|05-*|06-*|08-*|09-*|11-*) cp "$f" "$OUT/articles/$name" ;;
   esac
 done
-say "prose + lead  from samples/ (these are the part that needs a model)"
+say "prose + lead  from samples/ (the part that needs a model; those were"
+say "                written with Claude — see samples/edition/PROVENANCE.md)"
 
 # ------------------------------------------------------------------- check
 echo

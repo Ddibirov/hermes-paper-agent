@@ -118,6 +118,22 @@ def test_shipped_fixtures_still_parse(steps_desk, ledger_desk):
     json.loads((REPO / "inbox" / "calendar.json").read_text())
 
 
+def test_provenance_accounts_for_every_published_article():
+    """The sample edition is what the demo site serves and what the README
+    screenshots show, so it has to stay honest about which articles are code
+    and which a model wrote. An article added without a line here would leave a
+    reader to assume a local model wrote something it did not."""
+    provenance = REPO / "samples" / "edition" / "PROVENANCE.md"
+    assert provenance.is_file(), "the published sample has no PROVENANCE.md"
+    listed = set(re.findall(r"`(\d\d-[a-z-]+\.md)`", provenance.read_text()))
+    on_disk = {p.name for p in (REPO / "samples" / "edition").glob("*/articles/*.md")}
+    assert on_disk, "no sample articles found"
+    assert on_disk == listed, (
+        f"PROVENANCE.md is out of step: "
+        f"missing {sorted(on_disk - listed)}, stale {sorted(listed - on_disk)}"
+    )
+
+
 def test_paper_json_is_well_formed():
     paper = json.loads((REPO / "editions" / "paper.json").read_text())
     assert paper["masthead"] and paper["motto"] and paper["founded"]
