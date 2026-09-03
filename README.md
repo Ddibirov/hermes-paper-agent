@@ -11,6 +11,14 @@ The whole thing is an agent. You talk to Hermes once and a scheduled run writes,
 checks, fixes and publishes a clean edition every night at 4 a.m. — a paper
 with a front page, sections, charts, quotes and an end, not a feed with no end.
 
+![The opening spread of the sample edition — page one leads with the front-page
+story, page two with the Weather and Financial boards, set as a two-page
+broadsheet spread.](screenshots/pages-1-2.png)
+
+*The first two pages of the sample edition, as the reader lays them out on a
+desktop. Page one is today's lead; page two carries the Weather and the
+Markets, written every night from your own material and live feeds.*
+
 > Start with the sample and read the result. Then make it yours — a masthead
 > line, a few real files in `inbox/`, and it is your paper, under your name.
 
