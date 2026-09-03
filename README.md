@@ -57,6 +57,7 @@ every other desk had filed.*
 - [Project structure](#-project-structure)
 - [The write → check → fix loop](#-the-write--check--fix-loop)
 - [Run it every night](#-run-it-every-night)
+- [Need the press?](#-need-the-press)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -533,6 +534,32 @@ then create the job with `workdir` pointed at this repo, `skills =
 Your paper is on the front porch (well: at <http://localhost:8791>) at
 breakfast — and if a desk gave up it shows as a printer's mark in the reader,
 not a blank page and not a fatal failure at 4 a.m.
+
+---
+
+## 🖨️ Need the press?
+
+This project is the newsroom, not the press — it writes an edition, it never
+prints one. The other half is a separate project:
+
+**[Vael Paper](https://github.com/vaelkeep/vael-paper)** — the engine that paginates and prints what the
+desks write. **[▶ See its own demo edition](https://vaelkeep.github.io/vael-paper/)**.
+
+It is worth knowing on its own terms, because the contract this generator
+writes to is documented there rather than here:
+
+| In the engine's repo | What it gives you |
+|---|---|
+| [`docs/FORMAT.md`](https://github.com/vaelkeep/vael-paper/blob/main/docs/FORMAT.md) | the full frontmatter and `chart:` specification, and every check code |
+| [`docs/WRITING.md`](https://github.com/vaelkeep/vael-paper/blob/main/docs/WRITING.md) | the author's guide — lengths, tables, pictures, voice |
+| [`docs/GENERATING.md`](https://github.com/vaelkeep/vael-paper/blob/main/docs/GENERATING.md) | the desk model this repo is a worked example of |
+| `vael-paper-check` | the report the write → check → fix loop is built around |
+
+The split is deliberate on both sides. The engine has no opinion about what
+wrote the folder it reads, so this generator is replaceable; and this
+generator has no opinion about typography, so the paper can be redesigned
+without touching a desk. If you want the press without the newsroom, that
+repo stands alone.
 
 ---
 
