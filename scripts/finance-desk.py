@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""Data desk: a Financial page with live quotes for example tickers.
+
+Fetches quotes from Yahoo Finance's public chart API (no key) for a set of
+tickers and renders a Financial story: a quote table and a short templated
+reading. Everything on the page is computed from what the API returned — a
+data desk, deliberately code, never handed to a model. Fix the script if the
+numbers or phrasing are wrong; do not have a model "improve" it.
+
+Usage:
+    finance-desk.py <edition_dir> [TICKER ...]
+
+Tickers default to NVDA AMZN MU. Exit status is 1 (and nothing is written) if
+any ticker fails to resolve, so a nightly job fails the run rather than print
+a paper page with a guessed price.
+
+Writes <edition_dir>/articles/03-the-markets.md (code 03 — after the lead and
+weather, where a markets board belongs).
+"""
+
+import argparse
+import json
+import sys
+import urllib.request
+from pathlib import Path
+
+API = "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range=1d&interval=1d"
+HEADERS = {"User-Agent": "Mozilla/5.0 (vael-paper-example/1.0)"}
+
+
+def fetch_quote(ticker: str) -> dict:
+    req = urllib.request.Request(API.format(ticker=ticker), headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=20) as r:
+        body = json.load(r)
+    result = body["chart"]["result"]
+    if not result:
+        raise ValueError(f"{ticker}: no quote data")
+    meta = result[0]["meta"]
+    price = meta.get("regularMarketPrice")
+    if price is None:
+        raise ValueError(f"{ticker}: no price in response")
+    prev = meta.get("chartPreviousClose")
+    change = (price - prev) if prev else 0.0
+    pct = meta.get("regularMarketChangePercent", 0.0)
+    return {
+        "symbol": meta.get("symbol", ticker),
+        "name": meta.get("shortName") or meta.get("longName") or ticker,
+        "price": price,
+        "change": change,
+        "pct": pct,
+        "hi52": meta.get("fiftyTwoWeekHigh"),
+        "lo52": meta.get("fiftyTwoWeekLow"),
+    }
+
+
+def money(x: float) -> str:
+    return f"${x:,.2f}"
+
+
+def build_article(quotes: list[dict]) -> str:
+    up = sum(1 for q in quotes if q["change"] >= 0)
+    down = len(quotes) - up
+    best = max(quotes, key=lambda q: q["pct"])
+    worst = min(quotes, key=lambda q: q["pct"])
+    names = ", ".join(q["name"] for q in quotes)
+
+    # Five columns (Ticker, Price, Chg, %, 52-wk) risks a table_wide lint;
+    # keep to four (all but one numeric) and fold the 52-week into the prose.
+    rows = "\n".join(
+        f"| {q['symbol']} | {money(q['price'])} | "
+        f"{'+' if q['change'] >= 0 else '−'}{abs(q['change']):,.2f} | "
+        f"{'+' if q['pct'] >= 0 else '−'}{abs(q['pct']):.2f}% |"
+        for q in quotes
+    )
+
+    deck = (
+        f"{best['name']} led ({'+' if best['pct'] >= 0 else '−'}"
+        f"{abs(best['pct']):.1f}%); {worst['name']} lagged"
+    )
+
+    body = (
+        f"Three of the names this paper follows closed {'higher' if up > down else 'mixed'} "
+        f"today — {up} up, {down} down on the day. The standouts were "
+        f"{best['name']}, {'up' if best['pct'] >= 0 else 'down'} {abs(best['pct']):.1f}%, "
+        f"and {worst['name']}, {'down' if worst['pct'] < 0 else 'up'} "
+        f"{abs(worst['pct']):.1f}%. "
+        f"The figures are the close as Yahoo Finance reported it at run time; "
+        f"the 52-week span for {names} runs from "
+        f"{min((q['lo52'] or q['price']) for q in quotes):,.0f} to "
+        f"{max((q['hi52'] or q['price']) for q in quotes):,.0f}. None of this is advice — "
+        f"it is a board, not a recommendation, and the paper reads the same "
+        f"line to itself every morning."
+    )
+
+    return f"""---
+id: 03-the-markets
+headline: Markets at the Close
+deck: {deck}
+section: financial
+priority: 3
+sources:
+  - name: Yahoo Finance
+    url: https://finance.yahoo.com
+---
+
+{body}
+
+### The board
+
+| Ticker | Price | Chg | % |
+|:---|---:|---:|---:|
+{rows}
+
+Quotes are the regular-session close for {up + down} names, pulled live from
+Yahoo Finance. A minus before a figure is a decline, set in italic on the
+page, the way every decline in this paper is.
+"""
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("edition_dir", type=Path)
+    ap.add_argument("tickers", nargs="*", default=["NVDA", "AMZN", "MU"])
+    args = ap.parse_args()
+
+    quotes = []
+    for t in args.tickers:
+        try:
+            quotes.append(fetch_quote(t.upper()))
+        except Exception as e:
+            print(f"error: could not fetch {t}: {e}", file=sys.stderr)
+            return 1
+
+    articles = args.edition_dir / "articles"
+    articles.mkdir(parents=True, exist_ok=True)
+    out = articles / "03-the-markets.md"
+    out.write_text(build_article(quotes))
+    print(f"wrote {out} ({', '.join(q['symbol'] for q in quotes)})")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

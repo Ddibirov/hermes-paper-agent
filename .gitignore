@@ -1,0 +1,14 @@
+# Edition output — generated, not committed
+
+This is the Vael Paper *generator* repo. Editions are output: the nightly run
+writes them here (or into the vael-paper repo's editions/), and the server
+reads whichever folder it is pointed at. Do not commit generated editions.
+The paper's identity — editions/paper.json — is the one file in here that is
+real and should be kept.
+
+# Local state
+__pycache__/
+*.pyc
+
+# The generated edition folders
+/editions/2026-*/
