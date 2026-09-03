@@ -37,6 +37,7 @@ material and live feeds.*
   - [2. Install Vael Paper (the engine that prints it)](#2-install-vael-paper-the-engine-that-prints-it)
   - [3. Install the agent (this repo)](#3-install-the-agent-this-repo)
   - [4. Print your first edition](#4-print-your-first-edition)
+- [Running it on another agent](#-running-it-on-another-agent)
 - [Usage — sample prompts](#-usage--sample-prompts)
 - [Configuration](#-configuration)
   - [The masthead: editions/paper.json](#the-masthead-editionspaperjson)
@@ -205,6 +206,67 @@ VAEL_PAPER_READER=/absolute/path/to/vael-paper/reader/dist \
 Open <http://localhost:8791>. Turn pages with the arrow keys; press **Source**
 to see the markdown behind any page. The first run is the fiction sample —
 next, make it yours.
+
+---
+
+## 🔌 Running it on another agent
+
+The repo is written for Hermes, but nothing in it is locked to Hermes. The
+coupling is three seams wide:
+
+| Seam | What it is | On another platform |
+|---|---|---|
+| `AGENTS.md` | the standing orders, auto-loaded | the open [agents.md](https://agents.md) convention — read natively by Codex, Cursor, Amp, Gemini CLI and others |
+| `skills/vael-paper-write/SKILL.md` | the write → check → fix procedure | the Agent Skills format (`name` + `description` frontmatter); Claude Code loads the file unchanged from `.claude/skills/` |
+| `cron/README.md` | the nightly schedule | any scheduler — launchd, systemd, cron, a GitHub Action — invoking an agent CLI non-interactively |
+
+Everything that does the actual work is already platform-agnostic. The four
+data desks import nothing but Python's standard library — no agent runtime, no
+model call. The inbox is plain files, `paper.json` is plain JSON, the output is
+markdown in a folder, and `vael-paper-check` is a CLI that exits nonzero. That
+leaves the agent needing only four capabilities: read files, write files, run a
+shell command, and loop until the exit code goes green.
+
+**Claude Code** — no file edits needed:
+
+```bash
+mkdir -p .claude/skills
+ln -s ../../skills/vael-paper-write .claude/skills/vael-paper-write
+echo '@AGENTS.md' > CLAUDE.md          # or just rename AGENTS.md
+```
+
+Then schedule it with cron against print mode:
+
+```bash
+0 4 * * *  cd /path/to/hermes-paper-agent && claude -p "Write tomorrow's edition. Use the vael-paper-write skill. The material is in inbox/."
+```
+
+**Codex, Cursor, Amp, Gemini CLI** — `AGENTS.md` is picked up as-is. There is no
+skill system to install into, so either paste the contents of
+`skills/vael-paper-write/SKILL.md` into `AGENTS.md`, or add a line to
+`AGENTS.md` telling the agent to read that file before it starts. Schedule it
+the same way, with whatever non-interactive flag the CLI offers.
+
+**No agent at all.** The four data desks under plain cron still fill a real
+edition — weather, markets, steps and the ledger — which the engine then
+paginates and prints exactly as it would any other:
+
+```bash
+# tomorrow's date, without depending on GNU vs BSD `date`
+D=editions/$(python3 -c 'import datetime;print(datetime.date.today()+datetime.timedelta(days=1))')
+scripts/steps-desk.py   "$D"
+scripts/ledger-desk.py  "$D"
+scripts/weather-desk.py "$D" --place "your town"
+scripts/finance-desk.py "$D" NVDA AMZN MU
+```
+
+What you lose is the prose desks and the front page — which is exactly the part
+that needs a model, and the reason the rest is code.
+
+One Hermes-specific reference survives, in `AGENTS.md`: the note about
+spreading prose desks across `delegate_task` children. It is already written as
+an optimisation to skip unless the model is strong enough, so on another
+platform it simply does not apply.
 
 ---
 
