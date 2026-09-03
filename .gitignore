@@ -19,6 +19,9 @@ __pycache__/
 /site/
 /build/
 
+# What quickstart.sh fetches and builds — delete it to start over
+/.quickstart/
+
 # Test and tooling caches
 .pytest_cache/
 .ruff_cache/

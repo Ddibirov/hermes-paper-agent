@@ -51,6 +51,7 @@ every other desk had filed.*
 - [Overview](#-overview)
 - [How it works](#-how-it-works)
 - [Getting started](#-getting-started)
+  - [Quickstart — one command](#quickstart--one-command)
   - [Prerequisites](#prerequisites)
   - [1. Install the required software](#1-install-the-required-software)
   - [2. Install Vael Paper (the engine that prints it)](#2-install-vael-paper-the-engine-that-prints-it)
@@ -134,6 +135,34 @@ block and the engine draws the plate in the paper's style.
 ---
 
 ## 🚀 Getting started
+
+### Quickstart — one command
+
+```bash
+git clone https://github.com/vaelkeep/hermes-paper-agent.git
+cd hermes-paper-agent
+./quickstart.sh
+```
+
+That fetches the engine, builds its reader once, runs the four data desks
+against live feeds, checks the result and serves it at
+<http://localhost:8791>. **No agent and no model needed.** The data desks are
+code, so the weather and the markets in the paper you get are real and current;
+the stories and the front page are the shipped samples, because those are the
+part that needs a model.
+
+Needs `git`, `python3` 3.11+, and Node 18+. It uses [uv](https://docs.astral.sh/uv/)
+if you have it and falls back to a plain venv if you don't. Everything lands in
+`.quickstart/`, which is gitignored — delete it to start over.
+
+Your own town and your own tickers:
+
+```bash
+./quickstart.sh --place Berlin --lat 52.52 --lon 13.40 --tickers "SAP ASML"
+```
+
+Once that has shown you what the thing is, the rest of this section sets up the
+agent that writes a new one every night.
 
 ### Prerequisites
 
@@ -499,6 +528,8 @@ tests/                        the suite: one file per desk plus the shared
                               touches a live API.
 .github/workflows/            CI (tests, lint, a sample edition), the
                               tag-triggered release, and the Pages deploy.
+quickstart.sh                 nothing to a printed paper in one command,
+                              with no agent and no model.
 docs/                         the architecture diagram and the nightly-run
                               GIF, each with the HTML it is rendered from —
                               correct them, don't redraw them.

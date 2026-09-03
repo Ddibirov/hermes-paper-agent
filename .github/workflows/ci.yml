@@ -93,3 +93,39 @@ jobs:
           name: sample-edition
           path: editions/ci/
           retention-days: 7
+
+  quickstart:
+    name: quickstart works from cold
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run it exactly as a stranger would
+        # No uv on the runner on purpose: this exercises the plain-venv
+        # fallback, which is the path someone without uv actually takes.
+        # The two live desks warn and skip if an API is down, so a flaky
+        # Open-Meteo cannot fail the build.
+        run: ./quickstart.sh --build-only --no-open
+
+      - name: The edition it produced is a whole paper
+        run: |
+          python - <<'PY'
+          import pathlib, sys
+          root = pathlib.Path(".quickstart/editions")
+          editions = [d for d in root.iterdir() if d.is_dir()]
+          assert len(editions) == 1, f"expected one edition, got {editions}"
+          articles = sorted((editions[0] / "articles").glob("*.md"))
+          names = [a.name for a in articles]
+          print(f"{editions[0].name}: {len(names)} articles")
+          for n in names:
+              print("  ", n)
+          # the four data desks plus the seven borrowed prose/lead files
+          assert len(names) >= 9, f"only {len(names)} articles; the desks did not all run"
+          assert any(n.startswith("01-") for n in names), "no front page"
+          PY
