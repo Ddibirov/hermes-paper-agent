@@ -81,10 +81,12 @@ def test_only_http_urls_are_linked(articles):
 @pytest.mark.parametrize("desk", DESKS)
 def test_desks_are_executable(desk):
     """They carry a shebang and the docs invoke them directly, so the exec bit
-    has to be set."""
+    has to be set — checked on POSIX; Windows does not store exec bits, so
+    there only the shebang is asserted."""
     path = SCRIPTS / desk
     assert path.read_text().startswith("#!/usr/bin/env python3"), desk
-    assert os.stat(path).st_mode & stat.S_IXUSR, f"{desk} is not executable"
+    if os.name != "nt":
+        assert os.stat(path).st_mode & stat.S_IXUSR, f"{desk} is not executable"
 
 
 @pytest.mark.parametrize("desk", DESKS)
