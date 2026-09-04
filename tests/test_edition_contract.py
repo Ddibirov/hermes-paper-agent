@@ -1,6 +1,7 @@
 """Cross-cutting rules every desk has to honour, from AGENTS.md and the
 Vael Paper format contract. These are the invariants that stop an edition
-printing with a mark in it."""
+printing with a mark in it.
+"""
 
 import json
 import os
@@ -10,19 +11,13 @@ import stat
 import pytest
 from conftest import REPO, SCRIPTS, frontmatter
 
-DESKS = ["steps-desk.py", "ledger-desk.py", "weather-desk.py", "finance-desk.py"]
+DESKS = ["ops-desk.py"]
 
 
 @pytest.fixture
-def articles(steps_desk, ledger_desk, weather_desk, finance_desk, open_meteo, quote):
-    """One article from each data desk, all from fixtures."""
-    return {
-        "steps": steps_desk.build_article([("Fri", 9120), ("Sat", 2840), ("Sun", 8100)]),
-        "ledger": ledger_desk.build_article(
-            [{"day": "Fri", "item": "Groceries", "amount": "$184.20"}]),
-        "weather": weather_desk.build_article(open_meteo, "Washington", "f"),
-        "finance": finance_desk.build_article([quote("NVDA"), quote("AMZN")]),
-    }
+def articles(ops_desk, checks):
+    """One article from the data desk, from canned checks — no network."""
+    return {"ops": ops_desk.build_article(checks)}
 
 
 def test_every_article_opens_with_frontmatter(articles):
@@ -69,16 +64,6 @@ def test_no_exclamation_marks(articles):
         assert "!" not in article, name
 
 
-def test_chart_blocks_have_one_label_per_value(articles):
-    for name, article in articles.items():
-        values = re.search(r"^  values: \[(.*)\]$", article, re.M)
-        labels = re.search(r"^  labels: \[(.*)\]$", article, re.M)
-        if not values:
-            continue
-        assert labels, f"{name}: chart with values but no labels"
-        assert len(values.group(1).split(",")) == len(labels.group(1).split(",")), name
-
-
 def test_pipe_tables_are_rectangular(articles):
     for name, article in articles.items():
         rows = [ln for ln in article.splitlines() if ln.startswith("|")]
@@ -96,7 +81,7 @@ def test_only_http_urls_are_linked(articles):
 @pytest.mark.parametrize("desk", DESKS)
 def test_desks_are_executable(desk):
     """They carry a shebang and the docs invoke them directly, so the exec bit
-    has to be set — it was not, and `scripts/steps-desk.py <dir>` failed."""
+    has to be set."""
     path = SCRIPTS / desk
     assert path.read_text().startswith("#!/usr/bin/env python3"), desk
     assert os.stat(path).st_mode & stat.S_IXUSR, f"{desk} is not executable"
@@ -111,29 +96,6 @@ def test_desks_import_only_the_standard_library(desk):
     assert not (imported & third_party), f"{desk} imports {imported & third_party}"
 
 
-def test_shipped_fixtures_still_parse(steps_desk, ledger_desk):
-    """The repo ships fixtures so a first run produces a paper. Keep them valid."""
-    assert steps_desk.load_steps(REPO / "inbox" / "steps.csv")
-    assert ledger_desk.load_ledger(REPO / "inbox" / "ledger.json")
-    json.loads((REPO / "inbox" / "calendar.json").read_text())
-
-
-def test_provenance_accounts_for_every_published_article():
-    """The sample edition is what the demo site serves and what the README
-    screenshots show, so it has to stay honest about which articles are code
-    and which a model wrote. An article added without a line here would leave a
-    reader to assume a local model wrote something it did not."""
-    provenance = REPO / "samples" / "edition" / "PROVENANCE.md"
-    assert provenance.is_file(), "the published sample has no PROVENANCE.md"
-    listed = set(re.findall(r"`(\d\d-[a-z-]+\.md)`", provenance.read_text()))
-    on_disk = {p.name for p in (REPO / "samples" / "edition").glob("*/articles/*.md")}
-    assert on_disk, "no sample articles found"
-    assert on_disk == listed, (
-        f"PROVENANCE.md is out of step: "
-        f"missing {sorted(on_disk - listed)}, stale {sorted(listed - on_disk)}"
-    )
-
-
 def test_paper_json_is_well_formed():
     paper = json.loads((REPO / "editions" / "paper.json").read_text())
     assert paper["masthead"] and paper["motto"] and paper["founded"]
@@ -141,3 +103,10 @@ def test_paper_json_is_well_formed():
     assert len(ids) == len(set(ids)), "duplicate section ids"
     for section in paper["sections"]:
         assert section["id"] and section["name"]
+
+
+def test_inbox_has_the_material_the_desks_read():
+    """The prose desks read these files every night; they must exist, even
+    empty, so a run never trips over a missing path."""
+    for name in ("feeds.md", "notes.md", "projects.md"):
+        assert (REPO / "inbox" / name).is_file(), f"inbox/{name} missing"

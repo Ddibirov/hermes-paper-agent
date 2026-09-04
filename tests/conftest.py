@@ -14,11 +14,10 @@ import pytest
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO / "scripts"
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 def load_desk(filename: str):
-    """Import a desk script by path, e.g. load_desk("steps-desk.py")."""
+    """Import a desk script by path, e.g. load_desk("ops-desk.py")."""
     path = SCRIPTS / filename
     name = filename.replace("-", "_").removesuffix(".py")
     spec = importlib.util.spec_from_file_location(name, path)
@@ -29,23 +28,8 @@ def load_desk(filename: str):
 
 
 @pytest.fixture(scope="session")
-def steps_desk():
-    return load_desk("steps-desk.py")
-
-
-@pytest.fixture(scope="session")
-def ledger_desk():
-    return load_desk("ledger-desk.py")
-
-
-@pytest.fixture(scope="session")
-def weather_desk():
-    return load_desk("weather-desk.py")
-
-
-@pytest.fixture(scope="session")
-def finance_desk():
-    return load_desk("finance-desk.py")
+def ops_desk():
+    return load_desk("ops-desk.py")
 
 
 @pytest.fixture(scope="session")
@@ -56,25 +40,14 @@ def paper_sections() -> set[str]:
 
 
 @pytest.fixture(scope="session")
-def open_meteo() -> dict:
-    return json.loads((FIXTURES / "open-meteo.json").read_text())
-
-
-@pytest.fixture
-def quote():
-    """Build a finance quote dict without going near the network."""
-    def _quote(symbol="AAPL", name=None, price=100.0, change=1.0, pct=1.0,
-               hi52=None, lo52=None):
-        return {
-            "symbol": symbol,
-            "name": name or symbol,
-            "price": price,
-            "change": change,
-            "pct": pct,
-            "hi52": hi52 if hi52 is not None else price * 1.2,
-            "lo52": lo52 if lo52 is not None else price * 0.8,
-        }
-    return _quote
+def checks():
+    """A canned probes result, so the article contract is tested offline."""
+    return {
+        "gateway": "live",
+        "processes": "3 procs",
+        "disk": "41% used",
+        "ran_at": "04:07",
+    }
 
 
 def frontmatter(article: str) -> dict:
